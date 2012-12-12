@@ -1,0 +1,11 @@
+2012-08-17  Christopher Hoobin  <hsirhc@gmail.com>
+
+	* Removed chrome.manifest. It is not required to this add-on.
+
+2012-07-23  Christopher Hoobin  <hsirhc@gmail.com>
+
+	* Dcqs Project is now a bootstrapped (no restart) add-on.
+
+	* Update Minimum version requirement changed to 4.0.
+
+	* Update Version string changed to a more appropriate format.
