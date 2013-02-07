@@ -32,55 +32,108 @@ official policies, either expressed or implied, of Christopher Hoobin.
 
 Components.utils.import("resource://gre/modules/Services.jsm");
 
-let moongiraffe = {};
+const PREFBRANCH = "extensions.dcqs@moongiraffe.net.";
 
-moongiraffe.Dcqs = {
-    toggle: function(window, value) {
-        var shortcut = window.document.getElementById("key_quitApplication");
+let Dcqs = {
+    startup: function(data) {
+        let branch = Services.prefs.getDefaultBranch(PREFBRANCH);
 
-        if (shortcut)
-            shortcut.setAttribute("disabled", value);
+        branch.setBoolPref("enable-control-shift-q", false);
+
+        Services.prefs.addObserver(PREFBRANCH + "enable-control-shift-q", Dcqs, false);
+
+        Services.ww.registerNotification(Dcqs);
+
+        Dcqs.windows(Dcqs.set);
+    },
+
+    shutdown: function() {
+        Services.prefs.removeObserver(PREFBRANCH + "enable-control-shift-q", Dcqs);
+
+        Services.ww.unregisterNotification(Dcqs);
+
+        Dcqs.windows(Dcqs.unset);
+    },
+
+    uninstall: function() {
+        Services.prefs.deleteBranch(PREFBRANCH);
+    },
+
+    windows: function(fn) {
+        let windows = Services.wm.getEnumerator("navigator:browser");
+
+        while (windows.hasMoreElements()) {
+            fn(windows.getNext());
+        }
     },
 
     set: function(window) {
-        moongiraffe.Dcqs.toggle(window, "true");
+        var shortcut = window.document.getElementById("key_quitApplication");
+
+        if (!shortcut)
+            return;
+
+        let ecsqs = Dcqs.ecsqs("enable-control-shift-q");
+
+        if (ecsqs) {
+            shortcut.setAttribute("modifiers", "accel shift");
+            shortcut.setAttribute("disabled", "false");
+        }
+        else {
+            shortcut.setAttribute("modifiers", "accel");
+            shortcut.setAttribute("disabled", "true");
+        }
     },
 
     unset: function(window) {
-        moongiraffe.Dcqs.toggle(window, "false");
+        var shortcut = window.document.getElementById("key_quitApplication");
+
+        if (!shortcut)
+            return;
+
+        Services.console.logStringMessage("unset");
+
+        shortcut.setAttribute("modifiers", "accel");
+        shortcut.setAttribute("disabled", "false");
+    },
+
+    ecsqs: function(key) {
+        let branch = Services.prefs.getBranch(PREFBRANCH);
+
+        return branch.getBoolPref(key);
     },
 
     observe: function(subject, topic, data) {
         if (topic === "domwindowopened") {
             subject.addEventListener("load", function(event) {
-                moongiraffe.Dcqs.set(subject);
+                Dcqs.set(subject);
             }, false);
         }
-    },
+        else {
+            Dcqs.windows(Dcqs.set);
+        }
+    }
 };
 
 function startup(data, reason) {
-    Services.ww.registerNotification(moongiraffe.Dcqs);
+    // As of Gecko 10.0, manifest registration is performed automatically.
+    if (Services.vc.compare(Services.appinfo.platformVersion, "10.0") < 0)
+        Components.manager.addBootstrappedManifestLocation(data.installPath);
 
-    let windows = Services.wm.getEnumerator("navigator:browser");
-
-    while (windows.hasMoreElements()) {
-        moongiraffe.Dcqs.set(windows.getNext());
-    }
+    Dcqs.startup(data);
 }
 
 function shutdown(data, reason) {
-    Services.ww.unregisterNotification(moongiraffe.Dcqs);
+    if (Services.vc.compare(Services.appinfo.platformVersion, "10.0") < 0)
+        Components.manager.removeBootstrappedManifestLocation(data.installPath);
 
-    let windows = Services.wm.getEnumerator("navigator:browser");
-
-    while (windows.hasMoreElements()) {
-        moongiraffe.Dcqs.unset(windows.getNext());
-    }
+    Dcqs.shutdown();
 }
 
 function install(data, reason) {
 }
 
 function uninstall(data, reason) {
+    if (reason === 6 /* ADDON_UNINSTALL */)
+        Dcqs.uninstall();
 }
