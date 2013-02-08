@@ -1,3 +1,7 @@
+2013-02-07  Christopher Hoobin  <hsirhc@gmail.com>
+
+	* Added enable-control-shift-q option.
+
 2012-08-17  Christopher Hoobin  <hsirhc@gmail.com>
 
 	* Removed chrome.manifest. It is not required to this add-on.
