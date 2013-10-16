@@ -32,31 +32,17 @@ official policies, either expressed or implied, of Christopher Hoobin.
 
 Components.utils.import("resource://gre/modules/Services.jsm");
 
-const PREFBRANCH = "extensions.dcqs@moongiraffe.net.";
-
 let Dcqs = {
     startup: function(data) {
-        let branch = Services.prefs.getDefaultBranch(PREFBRANCH);
-
-        branch.setBoolPref("enable-control-shift-q", false);
-
-        Services.prefs.addObserver(PREFBRANCH + "enable-control-shift-q", Dcqs, false);
-
         Services.ww.registerNotification(Dcqs);
 
         Dcqs.windows(Dcqs.set);
     },
 
     shutdown: function() {
-        Services.prefs.removeObserver(PREFBRANCH + "enable-control-shift-q", Dcqs);
-
         Services.ww.unregisterNotification(Dcqs);
 
         Dcqs.windows(Dcqs.unset);
-    },
-
-    uninstall: function() {
-        Services.prefs.deleteBranch(PREFBRANCH);
     },
 
     windows: function(fn) {
@@ -70,37 +56,14 @@ let Dcqs = {
     set: function(window) {
         var shortcut = window.document.getElementById("key_quitApplication");
 
-        if (!shortcut)
-            return;
-
-        let ecsqs = Dcqs.ecsqs("enable-control-shift-q");
-
-        if (ecsqs) {
-            shortcut.setAttribute("modifiers", "accel shift");
-            shortcut.setAttribute("disabled", "false");
-        }
-        else {
-            shortcut.setAttribute("modifiers", "accel");
+        if (shortcut)
             shortcut.setAttribute("disabled", "true");
-        }
     },
 
     unset: function(window) {
         var shortcut = window.document.getElementById("key_quitApplication");
-
-        if (!shortcut)
-            return;
-
-        Services.console.logStringMessage("unset");
-
-        shortcut.setAttribute("modifiers", "accel");
-        shortcut.setAttribute("disabled", "false");
-    },
-
-    ecsqs: function(key) {
-        let branch = Services.prefs.getBranch(PREFBRANCH);
-
-        return branch.getBoolPref(key);
+        if (shortcut)
+            shortcut.setAttribute("disabled", "false");
     },
 
     observe: function(subject, topic, data) {
@@ -108,9 +71,6 @@ let Dcqs = {
             subject.addEventListener("load", function(event) {
                 Dcqs.set(subject);
             }, false);
-        }
-        else {
-            Dcqs.windows(Dcqs.set);
         }
     }
 };
@@ -134,6 +94,4 @@ function install(data, reason) {
 }
 
 function uninstall(data, reason) {
-    if (reason === 6 /* ADDON_UNINSTALL */)
-        Dcqs.uninstall();
 }
