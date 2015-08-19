@@ -1,3 +1,7 @@
+2015-08-19  Emanuel Czirai <zazdxscf@gmail.com>
+
+	* Also disable the close window Ctrl+Shift+W shortcut.
+
 2013-11-16  Christopher Hoobin  <christopher@hoob.in>
 
 	* Removed unused enable-control-shift-q option.

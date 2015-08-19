@@ -53,17 +53,23 @@ let Dcqs = {
         }
     },
 
-    set: function(window) {
-        var shortcut = window.document.getElementById("key_quitApplication");
+    set: function(window) { //disable keys
+        var shortcut = window.document.getElementById("key_quitApplication"); //Ctrl+Q
+        var shortcut2 = window.document.getElementById("key_closeWindow"); //Ctrl+Shift+W
 
         if (shortcut)
             shortcut.setAttribute("disabled", "true");
+        if (shortcut2)
+            shortcut2.setAttribute("disabled", "true");
     },
 
-    unset: function(window) {
-        var shortcut = window.document.getElementById("key_quitApplication");
+    unset: function(window) { //enable keys
+        var shortcut = window.document.getElementById("key_quitApplication"); //Ctrl+Q
+        var shortcut2 = window.document.getElementById("key_closeWindow"); //Ctrl+Shift+W
         if (shortcut)
             shortcut.setAttribute("disabled", "false");
+        if (shortcut2)
+            shortcut2.setAttribute("disabled", "false");
     },
 
     observe: function(subject, topic, data) {
